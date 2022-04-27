@@ -18,7 +18,7 @@ Our application will use both :
 * Pipeline retraining,  to retrain our model to make it even more accurate ( we are talking about heart failure and predictions so our model needs highly critical.)
 
 
-Dataset: 
+# Dataset: 
 * 11 clinical features for predicting stroke events:
 https://www.kaggle.com/datasets/fedesoriano/stroke-prediction-dataset
 * Heart Failure Prediction:
