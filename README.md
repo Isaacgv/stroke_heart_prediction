@@ -1,1 +1,1 @@
-# Strokes and Heart Failure Predicitons Model
+# Strokes and Heart Failure Predictions Model
