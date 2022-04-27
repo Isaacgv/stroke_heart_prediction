@@ -16,4 +16,15 @@ After it will display a detailed result about the patient status and possible pr
 Our application will use both :
 * Data ingestion and data ingestion to collect our data based on the user inputs.
 * Pipeline retraining,  to retrain our model to make it even more accurate ( we are talking about heart failure and predictions so our model needs highly critical.)
+
+
+Dataset: 
+* 11 clinical features for predicting stroke events:
+https://www.kaggle.com/datasets/fedesoriano/stroke-prediction-dataset
+* Heart Failure Prediction:
+https://www.kaggle.com/datasets/fedesoriano/heart-failure-prediction
+
+
+
+
 ![Screenshot 2022-04-27 at 6 56 27 PM](https://user-images.githubusercontent.com/49615833/165579996-2b784dfc-404d-40c8-99ee-c8ec92497faa.png)
