@@ -15,5 +15,5 @@ After it will display a detailed result about the patient status and possible pr
 
 ## Chosen features:
 Our application will use both :
-•	Data ingestion and data ingestion to collect our data based on the user inputs.
-•	Pipeline retraining,  to retrain our model to make it even more accurate ( we are talking about heart failure and predictions so our model needs highly critical.)
+* Data ingestion and data ingestion to collect our data based on the user inputs.
+* Pipeline retraining,  to retrain our model to make it even more accurate ( we are talking about heart failure and predictions so our model needs highly critical.)
