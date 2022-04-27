@@ -1,9 +1,9 @@
 # Strokes and Heart Failure Predictions Model
 
 ## Users :
-1-	Medical professionals
-2-	Clinics / hospitals
-3-	Medical devices
+* Medical professionals
+* Clinics / hospitals
+* Medical devices
 
 ## Usage Description:
 
