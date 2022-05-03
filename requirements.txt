@@ -1,1 +1,5 @@
 
+pandas==1.4.2
+jupter==1.0.0
+numpy==1.22.3
+streamlit==1.8.1
