@@ -3,3 +3,5 @@ pandas==1.4.2
 jupter==1.0.0
 numpy==1.22.3
 streamlit==1.8.1
+fastapi==0.75.2
+uvicorn==0.17.6
