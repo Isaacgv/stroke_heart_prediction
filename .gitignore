@@ -64,7 +64,8 @@ db.sqlite3-journal
 # Flask stuff:
 instance/
 .webassets-cache
-
+.ipynb_checkpoints
+*.ipynb_checkpoints
 # Scrapy stuff:
 .scrapy
 
