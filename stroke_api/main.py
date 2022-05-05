@@ -16,7 +16,8 @@ def make_predicition(details: dict):
         prediciton_df.loc[0,column_name]=details[column_name]
     
     classifier = pickle.load(open(file, "rb"))
-    print(classifier.predict(prediciton_df))
+    #print(classifier.predict(prediciton_df))
+    print("success")
 
 
 @app.post("/")
