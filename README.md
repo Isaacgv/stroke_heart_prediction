@@ -24,6 +24,13 @@ https://www.kaggle.com/datasets/fedesoriano/stroke-prediction-dataset
 * Heart Failure Prediction:
 https://www.kaggle.com/datasets/fedesoriano/heart-failure-prediction
 
+## Execute Program:
+
+1. uvicorn  main:app --host 0.0.0.0 --port 8000
+
+2. streamlit run web_interface.py
+
+
 
 
 
