@@ -64,7 +64,8 @@ db.sqlite3-journal
 # Flask stuff:
 instance/
 .webassets-cache
-
+.ipynb_checkpoints
+*.ipynb_checkpoints
 # Scrapy stuff:
 .scrapy
 
@@ -131,5 +132,11 @@ dmypy.json
 # Apple Stuff
 .DS_Store
 
+#streamlit
+.idea
+
+#vscode
+.vscode
+.vscode/*
 # Data Folder
 #data/
