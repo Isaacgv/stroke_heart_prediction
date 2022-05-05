@@ -86,13 +86,6 @@ def preprocess_gender(df):
     return df, other_inde
 
 
-def preprocess_ever_married(df):
-
-    df = df.replace("no", 0)
-    df = df.replace("yes", 1)
-    return df
-
-
 def fit_scaler(df):
 
     cols = ["age", "avg glucose level", "bmi"]
@@ -118,7 +111,7 @@ def preprocess_residence(df):
     return df
 
 
-def preprocess_ever_married_1(df):
+def preprocess_ever_married(df):
 
     df = df.replace("Yes", 0)
     df = df.replace("No", 1)
