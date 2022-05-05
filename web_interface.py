@@ -12,10 +12,7 @@ def get_prediction(url,features):
     req = requests.post(url, data=json.dumps(features))
     st.write(req.content)
 
-gender_list=np.array(["Male","Female"])
-yes_no=np.array(["Yes","No"])
-work_type_lit=np.array(['Private', 'Self employed', 'Govt job', 'children', 'Never worked'])
-residence_type_list=np.array(['Urban', 'Rural'])
+
 
 st.title('Stroke Prediction')
 
