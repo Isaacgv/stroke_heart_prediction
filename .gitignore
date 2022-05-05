@@ -135,5 +135,8 @@ dmypy.json
 #streamlit
 .idea
 
+#vscode
+.vscode
+.vscode/*
 # Data Folder
 #data/

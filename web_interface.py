@@ -13,10 +13,12 @@ def get_prediction(url,features):
     st.write(req.content)
 
 
-
-st.title('Stroke Prediction')
-
 with st.form(key='my_form') as form :
+    gender_list = np.array(["Male", "Female"])
+    yes_no = np.array(["Yes", "No"])
+    work_type_lit = np.array(['Private', 'Self employed', 'Govt job', 'children', 'Never worked'])
+    residence_type_list = np.array(['Urban', 'Rural'])
+    st.sidebar.write("""## Enter your information""")
     first_name = st.text_input(label='First Name')
     last_name = st.text_input(label='Last Name')
     age = st.number_input(label='Age', min_value=0, step=1, max_value=150)
@@ -37,9 +39,6 @@ if submit_button :
     # Create Json object row
     #gender,age,hypertension,heart_disease,ever_married,work_type,
     #Residence_type,avg_glucose_level,bmi,smoking_status,stroke
-    df_columns=['id', 'gender', 'age', 'hypertension', 'heart_disease',
-             'ever_married','work_type', 'Residence_type', 'avg_glucose_level', 
-             'bmi','smoking_status']
     myform_json= {"first_name": first_name,
                   "last_name": last_name,
                   "age" : age,
