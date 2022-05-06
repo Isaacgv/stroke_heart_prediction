@@ -1,9 +1,9 @@
 
 pandas==1.4.2
-jupter==1.0.0
+jupyter==1.0.0
 numpy==1.22.3
 streamlit==1.8.1
 fastapi==0.75.2
 uvicorn==0.17.6
-stroke-predictions-p0w11==1.0.2
+stroke-prediction-p0w11==0.3
 scikit-learn==1.0.2
