@@ -29,7 +29,7 @@ with st.sidebar.expander("Single Predictions"):
         residence_type = st.radio("What is your living environment?", residence_type_list)
         avg_glucose_level = st.number_input(label='Enter your Average Glucose Level', min_value=0.0, step=0.1)
         bmi = st.number_input(label='Enter your body mass index (bmi)', min_value=0.0, step=0.1)
-        smoking_status = st.radio("Do you smoke ?", yes_no)
+        smoking_status = st.radio("Do you smoke ?", ('smoked', 'Unknown'))
         doctor_name = st.text_input(label='Dc. First Name')
         doctor_last_name = st.text_input(label='Dc. Last Name')
         submit_button = st.form_submit_button(label='Submit')
@@ -53,6 +53,7 @@ with st.sidebar.expander("Single Predictions"):
                           "doctor_name":doctor_name,
                           "doctor_last_name":doctor_last_name
                           }
+            st.write(get_prediction(backend,myform_json))
 
 
 with st.sidebar.expander("Upload File for Predictions"):
@@ -72,20 +73,5 @@ if submit_button_m :
             #gender,age,hypertension,heart_disease,ever_married,work_type,
             #Residence_type,avg_glucose_level,bmi,smoking_status,stroke
 
-            myform_json= {"first_name": first_name,
-                          "last_name": last_name,
-                          "age" : age,
-                          "gender": gender,
-                          "hypertension": hypertension,
-                          "heart_disease": heart_disease,
-                          "ever_married" : ever_married,
-                          "work_type": work_type,
-                          "Residence_type": residence_type,
-                          "avg_glucose_level": avg_glucose_level,
-                          "bmi": bmi,
-                          "smoking_status": smoking_status,
-                          "doctor_name":doctor_name,
-                          "doctor_last_name":doctor_last_name
-                          }
             d = pd.read_csv(uploaded_files)
             st.write(d)
