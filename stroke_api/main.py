@@ -1,3 +1,4 @@
+
 import sys
 sys.path.insert(0,'../stroke_prediction')
 import pickle
@@ -7,6 +8,7 @@ import pandas as pd
 import random
 import test
 import json
+
 app = FastAPI()
 file = "../models/classifier.pickle"
 
@@ -14,6 +16,7 @@ def make_predicition(details: dict):
     df_columns=['id', 'gender', 'age', 'hypertension', 'heart_disease',
              'ever_married','work_type', 'Residence_type', 'avg_glucose_level', 
              'bmi','smoking_status']
+
 
     prediciton_df = pd.DataFrame(columns=df_columns)
 
@@ -66,6 +69,7 @@ def make_predicition_document(details: dict):
 async def root(request: Request):
     res = await request.json()#{"message": "Hello World"}
     make_predicition(res)
+
     print(make_predicition(res))
     return make_predicition(res)
 
