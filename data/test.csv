@@ -1,0 +1,8 @@
+id,firstname, lastname, dob,gender,age,hypertension,heart_disease,ever_married,work_type,Residence_type,avg_glucose_level,bmi,smoking_status
+72231,Cody,Guerrero,1/12/1985,Female,47.0,0,0,Yes,Self-employed,Rural,195.61,,never smoked
+56804,Max,Dunn,12/3/1968,Female,34.0,0,0,No,Govt_job,Urban,60.36,24.1,never smoked
+66174,Eliza,Diaz,2/1/1958,Male,46.0,0,0,Yes,Self-employed,Rural,88.19,29.3,formerly smoked
+53636,Isaiah,Craig,1/21/1981,Female,11.0,0,0,No,children,Urban,88.79,21.3,never smoked
+34356,Mary,White,12/16/1987,Female,75.0,0,0,Yes,Private,Rural,108.72,29.2,formerly smoked
+55244,Ella,Watts,10/3/1964,Male,40.0,0,0,Yes,Self-employed,Rural,65.29,28.3,never smoked
+

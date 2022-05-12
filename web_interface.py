@@ -6,11 +6,15 @@ import numpy as np
 import json
 
 # interact with FastAPI endpoint
-backend ="http://127.0.0.1:8000/"
+backend ="http://127.0.0.1:8005/"
 
 def get_prediction(url,features):
     req = requests.post(url, data=json.dumps(features))
     st.write(req.content)
+
+def get_prediction_document(url, features):
+    req = requests.post(url+"document", data=features.to_json(orient ='index'))
+    return req.content
 
 with st.sidebar.expander("Single Predictions"):
     with st.form(key='my_form') as form :
@@ -53,7 +57,7 @@ with st.sidebar.expander("Single Predictions"):
                           "doctor_name":doctor_name,
                           "doctor_last_name":doctor_last_name
                           }
-            st.write(get_prediction(backend,myform_json))
+            st.write(get_prediction(backend, myform_json))
 
 
 with st.sidebar.expander("Upload File for Predictions"):
@@ -74,4 +78,8 @@ if submit_button_m :
             #Residence_type,avg_glucose_level,bmi,smoking_status,stroke
 
             d = pd.read_csv(uploaded_files)
-            st.write(d)
+            #d = d.to_dict('index')
+            result = json.loads(get_prediction_document(backend, d))
+            print(result)
+            result = pd.read_json(result, orient ='index') 
+            st.write(result)
