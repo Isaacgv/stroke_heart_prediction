@@ -5,5 +5,9 @@ numpy==1.22.3
 streamlit==1.8.1
 fastapi==0.75.2
 uvicorn==0.17.6
+<<<<<<< HEAD
 stroke-pred-p0w11==0.1
+=======
+stroke-prediction-p0w11==0.3
+>>>>>>> 4b4cd442ff939aa35e173927097270e09b80f9e9
 scikit-learn==1.0.2

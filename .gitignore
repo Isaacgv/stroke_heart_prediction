@@ -132,5 +132,12 @@ dmypy.json
 # Apple Stuff
 .DS_Store
 
+#streamlit
+.idea/
+.idea/*
+
+#vscode
+.vscode
+.vscode/*
 # Data Folder
 #data/
