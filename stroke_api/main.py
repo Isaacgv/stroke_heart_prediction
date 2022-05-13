@@ -61,7 +61,6 @@ def make_predicition_document(details: dict):
     
 
 
-
 @app.post("/")
 async def root(request: Request):
     res = await request.json()#{"message": "Hello World"}

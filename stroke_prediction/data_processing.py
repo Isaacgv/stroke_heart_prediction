@@ -161,38 +161,49 @@ def store_id(df):
 def build_model(xtrain, ytrain):
 
     file = "../models/classifier.pickle"
-    classifier = LogisticRegression()
+    classifier = LogisticRegression(max_iter=3000,penalty='l1', solver='liblinear')
     classifier.fit(xtrain, ytrain)
     pickle.dump(classifier, open(file, "wb"))
     return classifier
 
 
-def pipeline_train(df):
-    xtrain, xtest, ytrain, ytest = format_df(df)
-    fit_scaler_encoder(xtrain)
-    xtrain = transform_scaler_encoder(xtrain)
-    xtrain, ind = preprocess_gender(xtrain)
-    ytrain = ytrain.drop(index=ind)
-    xtrain = preprocess_ever_married(xtrain)
-    xtrain = preprocess_residence(xtrain)
-    ids, xtrain = store_id(xtrain)
-    return xtrain, ytrain, xtest, ytest
+def pipeline(df):
+    
+    if "stroke" in df.columns :
+        mask_0=df["stroke"]==0
+        mask_1=df["stroke"]==1
+        df_0=df[mask_0]
+        df_1=df[mask_1]
+        df_0=df_0.iloc[:1000,:]
+        df=pd.concat((df_0,df_1))
+        xtrain, xtest, ytrain, ytest = format_df(df)
 
+        fit_scaler_encoder(xtrain)
+        xtrain = transform_scaler_encoder(xtrain)
+        xtrain, ind = preprocess_gender(xtrain)
 
-def pipeline_test(df):
-    df = format_inference_df(df)
-    if df["bmi"].isnull().sum() > 0:
-        df = transform_imputer(df)
-    df, ind = preprocess_gender(df)
-    df = preprocess_ever_married(df)
-    df = preprocess_residence(df)
-    df = transform_scaler_encoder(df)
-    ids, df = store_id(df)
-    return df
+        ytrain = ytrain.drop(index=ind)
+        xtrain = preprocess_ever_married(xtrain)
+        xtrain = preprocess_residence(xtrain)
+        ids, xtrain = store_id(xtrain)
+        return xtrain, ytrain, xtest, ytest
+    else :
+        if "firstname" in df.columns:
+            df = df.loc[:,[col for col in df.columns if col not in ['firstname', ' lastname', ' dob']]]
+            
+        df = format_inference_df(df)
+        if df["bmi"].isnull().sum() > 0:
+            df = transform_imputer(df)
+        df, ind = preprocess_gender(df)
+        df = preprocess_ever_married(df)
+        df = preprocess_residence(df)
+        df = transform_scaler_encoder(df)
+        ids, df = store_id(df)
+        return df
 
 
 def evaluate_model(xtest, ytest):
-    xtest = pipeline_test(xtest)
+    xtest = pipeline(xtest)
     file = "../models/classifier.pickle"
     classifier = pickle.load(open(file, "rb"))
     return classifier.score(xtest, ytest)
