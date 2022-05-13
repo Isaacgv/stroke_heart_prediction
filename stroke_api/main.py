@@ -31,9 +31,6 @@ def make_predicition(details: dict):
     details["id"]=1
     for column_name in df_columns:
         prediciton_df.loc[0,column_name] = details[column_name]
-    print(prediciton_df)
-    print(test.make_prediction(prediciton_df))
-    print("success")
     return {"result": int(test.make_prediction(prediciton_df)[0])}
 
 
