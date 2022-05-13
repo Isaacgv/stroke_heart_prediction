@@ -1,4 +1,4 @@
-from data_processing import pipeline
+from stroke_prediction.data_processing import pipeline
 import pickle
 
 
