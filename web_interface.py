@@ -6,7 +6,7 @@ import numpy as np
 import json
 
 # interact with FastAPI endpoint
-backend ="http://127.0.0.1:8005/"
+backend ="http://0.0.0.0:8005/"
 
 def get_prediction(url,features):
     req = requests.post(url, data=json.dumps(features))
@@ -26,7 +26,7 @@ with st.sidebar.expander("Single Predictions"):
         last_name = st.text_input(label='Last Name')
         age = st.number_input(label='Age', min_value=0, step=1, max_value=150)
         gender = st.radio("Select gender", gender_list)
-        hypertension = st.number_input(label='Enter Hypertension value', min_value=0.0, step=0.1)
+        hypertension = st.radio("Did you had Hypertension in the past ?", yes_no)
         heart_disease = st.radio("Did you had a heart problem in the past ?", yes_no)
         ever_married = st.radio("Have you ever been married ?", yes_no)
         work_type = st.radio("What is your work type ?", work_type_lit)
