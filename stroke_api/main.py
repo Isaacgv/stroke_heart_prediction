@@ -39,7 +39,7 @@ def make_mulitple_predicition(patients: List[Patient]):
     records= [dict(patients[patienindex])  for patienindex in range(len(patients))]
     prediciton_df= pd.DataFrame.from_records(records)
     prediciton_df.drop(['firstname','lastname'], axis = 1,inplace=True)
-    prediciton_df["result"]=make_prediction(prediciton_df)
+    prediciton_df["predicition"]=make_prediction(prediciton_df)
     return dumps(prediciton_df.to_dict('index'))
     
 @app.get("/")

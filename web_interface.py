@@ -1,12 +1,8 @@
-from curses import reset_prog_mode
-from ftplib import error_temp
-from typing import OrderedDict
-from matplotlib.font_manager import json_dump
 import pandas as pd
 import numpy as np
 
 import json
-from fastapi.responses import JSONResponse
+from data_model.stroke_model import Patient
 import requests
 import streamlit as st
 
@@ -22,14 +18,24 @@ def get_prediction():
         prediction = results["prediction"]
         return prediction
 
+def color_neg(val):
+    color = 'red' if type(val) == str and val=="Risk of Stroke" else 'green'
+    return 'color: %s' %color
+def check_colmuns(data):
+    model_columns= Patient.getColumns()
+    data.columns in model_columns
+
 def get_prediction_document(data :pd.DataFrame):
     df_json= data.to_dict(orient='records')
     url =BACKEND + "document"
     response = requests.get(url, json=df_json)
-    result = json.loads(response.content)
-    prediction_df = pd.read_json(result, orient ='index') 
-    data["result"]=prediction_df["result"]
-    return data
+    if response.status_code == 200:
+        result = json.loads(response.content)
+        prediction_df = pd.read_json(result, orient ='index') 
+        data["predicition"]=prediction_df["predicition"]
+        styler=data.style.applymap(color_neg)
+        data["predicition"] = data["predicition"].apply(lambda x:"Risk of Stroke" if x == 1 else "Normal")
+        st.dataframe(data.style.applymap(color_neg,subset=['predicition']))
 
 def details_to_json():
     myform_json= {  "id" :0,
@@ -99,7 +105,7 @@ if submit_button :
 # File  Prediction Page Section
 
 with st.sidebar.expander("Upload File for Predictions"):
-    with st.form(key="predictions"):
+    with st.form(key="predictions",clear_on_submit=True):
         uploaded_files = st.file_uploader("Choose a CSV file")
         if uploaded_files:
             st.write("filename:", uploaded_files.name)
@@ -109,7 +115,6 @@ with st.sidebar.expander("Upload File for Predictions"):
 
 if submit_button_m :
     data = pd.read_csv(uploaded_files)
-    result =get_prediction_document(data)
-    st.write(result)
+    get_prediction_document(data)
 
 
