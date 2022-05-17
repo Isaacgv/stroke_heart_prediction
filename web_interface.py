@@ -1,3 +1,4 @@
+from curses import reset_prog_mode
 from ftplib import error_temp
 from typing import OrderedDict
 from matplotlib.font_manager import json_dump
@@ -12,19 +13,40 @@ import streamlit as st
 # interact with FastAPI endpoint
 BACKEND ="http://0.0.0.0:8005/"
 
-def get_prediction(features):
+def get_prediction():
+    features= details_to_json()
     url =BACKEND + "predcit"
-    response = requests.get(url, json=json.dumps(features))
+    response = requests.get(url, json=features)
     if response.status_code ==200:
         results=response.json()
         prediction = results["prediction"]
         return prediction
 
+def get_prediction_document(data :pd.DataFrame):
+    df_json= data.to_dict(orient='records')
+    url =BACKEND + "document"
+    response = requests.get(url, json=df_json)
+    result = json.loads(response.content)
+    prediction_df = pd.read_json(result, orient ='index') 
+    data["result"]=prediction_df["result"]
+    return data
 
-def get_prediction_document(features):
-    response = requests.post(BACKEND+"document", data=features.to_json(orient ='index'))
-    return response.content
-
+def details_to_json():
+    myform_json= {  "id" :0,
+                    "firstname": first_name,
+                    "lastname": last_name,
+                    "gender": gender,
+                    "age" : age,
+                    "hypertension": 1 if hypertension=="yes" else 0,
+                    "heart_disease": 1 if heart_disease=="yes" else 0,
+                    "ever_married" : ever_married,
+                    "work_type": work_type,
+                    "Residence_type": residence_type,
+                    "avg_glucose_level": avg_glucose_level,
+                    "bmi": bmi,
+                    "smoking_status": smoking_status
+                    }
+    return myform_json
 
 
 # Singular Prediction Page Section
@@ -54,8 +76,8 @@ with st.sidebar.expander("Single Predictions"):
         residence_type_list = np.array(['Urban', 'Rural'])
         first_name = st.text_input(label='First Name')
         last_name = st.text_input(label='Last Name')
-        age = st.number_input(label='Age', min_value=0, step=1, max_value=150)
         gender = st.radio("Select your Gender", gender_list)
+        age = st.number_input(label='Age', min_value=0, step=1, max_value=150)
         hypertension = st.radio("Did you had Hypertension in the past ?", yes_no)
         heart_disease = st.radio("Did you had Heart Problem in the past ?", yes_no)
         ever_married = st.radio("Have you ever been married ?", yes_no)
@@ -69,28 +91,11 @@ with st.sidebar.expander("Single Predictions"):
         submit_button = st.form_submit_button(label='Predict')
 
 if submit_button :
-    myform_json= {  "first_name": first_name,
-                    "last_name": last_name,
-                    "age" : age,
-                    "gender": gender,
-                    "hypertension": hypertension,
-                    "heart_disease": heart_disease,
-                    "ever_married" : ever_married,
-                    "work_type": work_type,
-                    "Residence_type": residence_type,
-                    "avg_glucose_level": avg_glucose_level,
-                    "bmi": bmi,
-                    "smoking_status": smoking_status,
-                    "doctor_name":doctor_name,
-                    "doctor_last_name":doctor_last_name
-                    }
-    
-    prediciton = get_prediction(myform_json)
+    prediciton = get_prediction()
     message = f"{first_name} {last_name} You are at risk of a stroke !" if prediciton == 1 else  "you are safe to slay another day :)"
     message_color = 'red' if prediciton == 1 else  'green'
     st.markdown(f"<h3 style='text-align: left;color:{message_color}'> {(message)} </h3>", unsafe_allow_html=True)
   
-
 # File  Prediction Page Section
 
 with st.sidebar.expander("Upload File for Predictions"):
@@ -98,14 +103,13 @@ with st.sidebar.expander("Upload File for Predictions"):
         uploaded_files = st.file_uploader("Choose a CSV file")
         if uploaded_files:
             st.write("filename:", uploaded_files.name)
-
         submit_button_m = st.form_submit_button("Submit")
-
         if submit_button_m:
             st.success("File sent")
 
 if submit_button_m :
     data = pd.read_csv(uploaded_files)
-    result = json.loads(get_prediction_document(data))
-    results_table = pd.read_json(result, orient ='index') 
-    st.write(results_table)
+    result =get_prediction_document(data)
+    st.write(result)
+
+
