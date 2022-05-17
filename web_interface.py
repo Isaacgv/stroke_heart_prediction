@@ -21,11 +21,13 @@ def get_prediction():
 def color_neg(val):
     color = 'red' if type(val) == str and val=="Risk of Stroke" else 'green'
     return 'color: %s' %color
+
 def check_colmuns(data):
     model_columns= Patient.getColumns()
     data.columns in model_columns
 
 def get_prediction_document(data :pd.DataFrame):
+    data=data.dropna()
     df_json= data.to_dict(orient='records')
     url =BACKEND + "document"
     response = requests.get(url, json=df_json)
