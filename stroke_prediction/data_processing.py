@@ -33,6 +33,27 @@ def reformat_work_type(df):
     return df
 
 
+def reformat_rows(df):
+    
+    cols = [col for col in df.columns if df[col].dtype=="O"]
+    for col in cols:
+        df[col] = df[col].str.lower()
+        df[col] = df[col].str.strip()
+        
+    return df
+
+
+def fill_missing_values(df):
+
+    mask = df.isnull().sum() > 0
+    cols_null = df.isnull().sum()[mask].index.tolist()
+    for col in cols_null:
+        mode = df[col].mode()
+        df[col] = df[col].fillna(mode[0])
+
+    return df
+    
+
 def rename_columns(df):
 
     df = df.rename(columns={"heart_disease": "heart disease",
@@ -79,9 +100,9 @@ def transform_imputer(df):
 
 def preprocess_gender(df):
 
-    df = df.replace("Male", 0)
-    df = df.replace("Female", 1)
-    other_inde = df[df["gender"] == "Other"].index
+    df = df.replace("male", 0)
+    df = df.replace("female", 1)
+    other_inde = df[df["gender"] == "other"].index
     df = df.drop(other_inde)
     return df, other_inde
 
@@ -106,15 +127,15 @@ def transfom_scaler(df):
 
 def preprocess_residence(df):
 
-    df = df.replace("Urban", 0)
-    df = df.replace("Rural", 1)
+    df = df.replace("urban", 0)
+    df = df.replace("rural", 1)
     return df
 
 
 def preprocess_ever_married(df):
 
-    df = df.replace("Yes", 0)
-    df = df.replace("No", 1)
+    df = df.replace("yes", 0)
+    df = df.replace("no", 1)
     return df
 
 
@@ -146,7 +167,6 @@ def fit_scaler_encoder(df):
 
 def transform_scaler_encoder(df):
 
-    df = transform_imputer(df)
     df = transform_encoder(df)
     df = transfom_scaler(df)
     return df
@@ -169,6 +189,9 @@ def build_model(xtrain, ytrain):
 
 def pipeline(df):
     
+    df = reformat_rows(df)
+    df = fill_missing_values(df)
+    
     if "stroke" in df.columns :
         mask_0=df["stroke"]==0
         mask_1=df["stroke"]==1
@@ -188,15 +211,14 @@ def pipeline(df):
         ids, xtrain = store_id(xtrain)
         return xtrain, ytrain, xtest, ytest
     else :
+        
         if "firstname" in df.columns:
             df = df.loc[:,[col for col in df.columns if col not in ['firstname', ' lastname', ' dob']]]
-            
         df = format_inference_df(df)
-        if df["bmi"].isnull().sum() > 0:
-            df = transform_imputer(df)
         df, ind = preprocess_gender(df)
         df = preprocess_ever_married(df)
         df = preprocess_residence(df)
+        
         df = transform_scaler_encoder(df)
         ids, df = store_id(df)
         return df
