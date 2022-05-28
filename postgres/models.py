@@ -4,7 +4,7 @@ from sqlalchemy import String,Boolean,Integer,Float,Column
 
 class Patient(Base):
     __tablename__ ='patients'
-    id= Column(Integer,primary_key=True)
+    id= Column(Integer,primary_key=True,autoincrement=True, nullable=True)
     firstname= Column(String(35),nullable=False)
     lastname= Column(String(35),nullable=False)
     gender = Column(String(5),nullable=False)

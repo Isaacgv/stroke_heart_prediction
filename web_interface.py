@@ -9,6 +9,15 @@ import streamlit as st
 # interact with FastAPI endpoint
 BACKEND ="http://0.0.0.0:8005/"
 
+def save_prediction(features):
+    url =BACKEND + "patients"
+    response = requests.post(url, json=features)
+    if response.status_code ==201:
+        st.write(response.json() )
+    else:
+        st.error("An error occurred while getting the prediction!")
+
+
 def get_prediction():
     features= details_to_json()
     url =BACKEND + "predcit"
@@ -16,6 +25,7 @@ def get_prediction():
     if response.status_code ==200:
         results=response.json()
         prediction = results["prediction"]
+        save_prediction(features)
         return prediction
     else:
         st.error("An error occurred while getting the prediction!")
