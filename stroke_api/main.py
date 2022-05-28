@@ -1,17 +1,20 @@
-from pickle import LIST
-from wsgiref.util import request_uri
+from importlib.util import resolve_name
 import sys
 sys.path.insert(0,'../stroke_prediction')
+sys.path.insert(0,'../postgres')
 
 from stroke_prediction.inference import make_prediction
 
 import pandas as pd
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import Optional
 from json import dumps
 from typing import List
+
+from database import SessionLocal
+import models
 
 app = FastAPI()
 
@@ -30,7 +33,13 @@ class Patient(BaseModel):
     bmi: Optional[float]=0.0
     smoking_status:str
 
-def make_one_predicition(patient: Patient):
+    class Config:
+        # Serialize our sql into json 
+        orm_mode= True
+
+db =SessionLocal()
+
+def make_one_predicition(patient: Patient)->dict:
     pd_dict = patient.dict()
     prediciton_df= pd.DataFrame.from_dict([pd_dict])
     prediciton_df.drop(['firstname','lastname'], axis = 1,inplace=True)
@@ -57,3 +66,16 @@ async def predict(patient: Patient):
 async def predict_file(patiens: List[Patient]):
     result = make_mulitple_predicition(patiens)
     return result
+
+@app.get("/patients",response_model=Patient,status_code=200)
+async def get_all_patients():
+    patients= db.query(models.Patient).all() # as json 
+    return patients
+    
+@app.get("/patient/{patient_id}")
+async def get_patient(item_id: int):
+    pass
+
+@app.post("/patient")
+async def create_patient():
+    pass
