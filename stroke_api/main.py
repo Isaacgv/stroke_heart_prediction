@@ -7,7 +7,7 @@ from stroke_prediction.inference import make_prediction
 
 import pandas as pd
 
-from fastapi import FastAPI
+from fastapi import FastAPI,status
 from pydantic import BaseModel
 from typing import Optional
 from json import dumps
@@ -67,15 +67,35 @@ async def predict_file(patiens: List[Patient]):
     result = make_mulitple_predicition(patiens)
     return result
 
-@app.get("/patients",response_model=Patient,status_code=200)
+@app.get("/patients",response_model=List[Patient],status_code=200)
 async def get_all_patients():
     patients= db.query(models.Patient).all() # as json 
     return patients
+
     
 @app.get("/patient/{patient_id}")
 async def get_patient(item_id: int):
     pass
 
-@app.post("/patient")
-async def create_patient():
-    pass
+@app.post("/patients",response_model=Patient,
+          status_code=status.HTTP_201_CREATED)
+async def create_patient(patient: Patient):
+    new_patient =models.Patient(
+        firstname=patient.firstname,
+        lastname=patient.lastname,
+        gender=patient.gender,
+        age=patient.age,
+        hypertension=patient.hypertension,
+        heart_disease=patient.heart_disease,
+        ever_married=patient.ever_married,
+        work_type=patient.work_type,
+        Residence_type=patient.Residence_type,
+        avg_glucose_level=patient.avg_glucose_level,
+        bmi=patient.bmi,
+        smoking_status=patient.smoking_status
+    )
+    db.add(new_patient)
+    db.flush()
+    db.commit()
+    db.refresh()
+    return new_patient 
