@@ -1,8 +1,8 @@
 import pandas as pd
 import numpy as np
-
 import json
-from data_model.stroke_model import Patient
+
+from pydantic import NoneBytes
 import requests
 import streamlit as st
 
@@ -17,17 +17,23 @@ def get_prediction():
         results=response.json()
         prediction = results["prediction"]
         return prediction
+    else:
+        st.error("An error occurred while getting the prediction!")
 
 def color_neg(val):
     color = 'red' if type(val) == str and val=="Risk of Stroke" else 'green'
     return 'color: %s' %color
 
-def check_colmuns(data):
-    model_columns= Patient.getColumns()
-    data.columns in model_columns
+# Json Encoder doesnt like to deal with Nan's in Float columns
+def fix_Column_with_Nan_float(data):
+    float_cols = data.select_dtypes(include=['float64','int64']).columns
+    str_cols = data.select_dtypes(include=['object']).columns
+    data.loc[:, float_cols]=data.loc[:, float_cols].fillna(0.0)
+    data.loc[:, str_cols]=data.loc[:, str_cols].fillna('')
+    return data
 
 def get_prediction_document(data :pd.DataFrame):
-    data=data.dropna()
+    data=fix_Column_with_Nan_float(data)
     df_json= data.to_dict(orient='records')
     url =BACKEND + "document"
     response = requests.get(url, json=df_json)
@@ -35,9 +41,11 @@ def get_prediction_document(data :pd.DataFrame):
         result = json.loads(response.content)
         prediction_df = pd.read_json(result, orient ='index') 
         data["predicition"]=prediction_df["predicition"]
-        styler=data.style.applymap(color_neg)
         data["predicition"] = data["predicition"].apply(lambda x:"Risk of Stroke" if x == 1 else "Normal")
         st.dataframe(data.style.applymap(color_neg,subset=['predicition']))
+    else:
+        st.error("An error occurred while parsinf the file's predictions !")
+
 
 def details_to_json():
     myform_json= {  "id" :0,
@@ -107,7 +115,7 @@ if submit_button :
 # File  Prediction Page Section
 
 with st.sidebar.expander("Upload File for Predictions"):
-    with st.form(key="predictions",clear_on_submit=True):
+    with st.form(key="predictions",clear_on_submit=True) as form:
         uploaded_files = st.file_uploader("Choose a CSV file")
         if uploaded_files:
             st.write("filename:", uploaded_files.name)
@@ -118,5 +126,6 @@ with st.sidebar.expander("Upload File for Predictions"):
 if submit_button_m :
     data = pd.read_csv(uploaded_files)
     get_prediction_document(data)
+
 
 

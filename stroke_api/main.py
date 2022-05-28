@@ -1,4 +1,5 @@
 from pickle import LIST
+from wsgiref.util import request_uri
 import sys
 sys.path.insert(0,'../stroke_prediction')
 
@@ -8,6 +9,7 @@ import pandas as pd
 
 from fastapi import FastAPI, Request
 from pydantic import BaseModel
+from typing import Optional
 from json import dumps
 from typing import List
 
@@ -24,8 +26,8 @@ class Patient(BaseModel):
     ever_married: str
     work_type: str
     Residence_type: str
-    avg_glucose_level: float
-    bmi: float
+    avg_glucose_level:Optional[float]=0.0
+    bmi: Optional[float]=0.0
     smoking_status:str
 
 def make_one_predicition(patient: Patient):
@@ -36,7 +38,7 @@ def make_one_predicition(patient: Patient):
     return {"prediction": prediction}
 
 def make_mulitple_predicition(patients: List[Patient]):
-    records= [dict(patients[patienindex])  for patienindex in range(len(patients))]
+    records= [dict(patients[patienindex]) for patienindex in range(len(patients))]
     prediciton_df= pd.DataFrame.from_records(records)
     prediciton_df.drop(['firstname','lastname'], axis = 1,inplace=True)
     prediciton_df["predicition"]=make_prediction(prediciton_df)
