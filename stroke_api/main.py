@@ -1,5 +1,9 @@
+from dataclasses import dataclass
+
 from importlib.util import resolve_name
+from pyexpat import model
 import sys
+
 sys.path.insert(0,'../stroke_prediction')
 sys.path.insert(0,'../postgres')
 
@@ -12,7 +16,7 @@ from pydantic import BaseModel
 from typing import Optional
 from json import dumps
 from typing import List
-
+from datetime import datetime
 from database import SessionLocal
 import models
 
@@ -36,6 +40,30 @@ class Patient(BaseModel):
     class Config:
         # Serialize our sql into json 
         orm_mode= True
+        
+class Record(BaseModel):
+    id: int
+    file_name: str
+    doctor_first_name:str
+    doctor_last_namestr:str
+    createdon: datetime
+
+    class Config:
+        # Serialize our sql into json 
+        orm_mode= True
+        
+        
+class Patient_in_db(Patient):
+    record_id :int
+    
+    class Config:
+        # Serialize our sql into json 
+        orm_mode= True     
+    
+def prepare_for_db(patient: Patient,record_id_indb):
+    patient_in_db = Patient_in_db(**patient.dict(), record_id=record_id_indb)
+    return patient_in_db
+
 
 db =SessionLocal()
 
@@ -77,10 +105,27 @@ async def get_all_patients():
 async def get_patient(item_id: int):
     pass
 
-@app.post("/patients",response_model=Patient,
+@app.post("/patient",response_model=Patient_in_db,
           status_code=status.HTTP_201_CREATED)
+
 async def create_patient(patient: Patient):
+    new_record = models.Record(
+          file_name="N/A",
+          doctor_first_name="N/A",
+          doctor_last_name="N/A",
+          createdon= datetime.now()
+    )
+    db.add(new_record)
+    db.flush()
+    record_id_indb=new_record.id
+    db.commit()
+    
+#     # At this point, the object f has been pushed to the DB, 
+#     # and has been automatically assigned a unique primary key id
+    patient_in_db= prepare_for_db(patient,record_id_indb)
+    print(patient_in_db)
     new_patient =models.Patient(
+        record_id=record_id_indb,
         firstname=patient.firstname,
         lastname=patient.lastname,
         gender=patient.gender,
@@ -97,5 +142,28 @@ async def create_patient(patient: Patient):
     db.add(new_patient)
     db.flush()
     db.commit()
-    db.refresh()
-    return new_patient 
+    return new_patient
+
+@app.post("/patients",response_model=List[Patient],
+          status_code=status.HTTP_201_CREATED)
+async def create_patient(patients: List[Patient]):
+    list_of_patients=[]
+    for patient in patients:
+        new_patient =models.Patient(
+            firstname=patient.firstname,
+            lastname=patient.lastname,
+            gender=patient.gender,
+            age=patient.age,
+            hypertension=patient.hypertension,
+            heart_disease=patient.heart_disease,
+            ever_married=patient.ever_married,
+            work_type=patient.work_type,
+            Residence_type=patient.Residence_type,
+            avg_glucose_level=patient.avg_glucose_level,
+            bmi=patient.bmi,
+            smoking_status=patient.smoking_status
+            )
+        list_of_patients.append(new_patient)
+    db.add_all(list_of_patients)
+    db.commit()
+    return list_of_patients 
