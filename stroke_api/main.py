@@ -1,27 +1,29 @@
-from dataclasses import dataclass
-
-from importlib.util import resolve_name
-from pyexpat import model
 import sys
-
 sys.path.insert(0,'../stroke_prediction')
 sys.path.insert(0,'../postgres')
 
-from stroke_prediction.inference import make_prediction
-
 import pandas as pd
 
-from fastapi import FastAPI,status
+# ML API
+from stroke_prediction.inference import make_prediction
+
+#FastAPI
+from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import Optional
 from json import dumps
 from typing import List
 from datetime import datetime
-from database import SessionLocal
+
+# Postgres init
+import dbApi as db
 import models
 
+# FastAPI init
 app = FastAPI()
 
+
+# BaseModels from FastAPI
 class Patient(BaseModel):
     id: int
     firstname : str
@@ -41,115 +43,70 @@ class Patient(BaseModel):
         # Serialize our sql into json 
         orm_mode= True
         
+class Patient_in_db(Patient):
+    record_id :int
+    prediciton: int
+    class Config:
+        # Serialize our sql into json 
+        orm_mode= True 
+        
 class Record(BaseModel):
-    id: int
-    file_name: str
-    doctor_first_name:str
-    doctor_last_namestr:str
-    createdon: datetime
+    id: Optional[int] = 0
+    file_name: Optional[str] = "N/A"
+    doctor_first_name:Optional[str] = "N/A"
+    doctor_last_name:Optional[str] = "N/A"
+    createdon: Optional[datetime] = datetime.now()
 
     class Config:
         # Serialize our sql into json 
         orm_mode= True
         
-        
-class Patient_in_db(Patient):
-    record_id :int
-    
-    class Config:
-        # Serialize our sql into json 
-        orm_mode= True     
-    
-def prepare_for_db(patient: Patient,record_id_indb):
-    patient_in_db = Patient_in_db(**patient.dict(), record_id=record_id_indb)
-    return patient_in_db
-
-
-db =SessionLocal()
-
-def make_one_predicition(patient: Patient)->dict:
-    pd_dict = patient.dict()
-    prediciton_df= pd.DataFrame.from_dict([pd_dict])
-    prediciton_df.drop(['firstname','lastname'], axis = 1,inplace=True)
-    prediction=int(make_prediction(prediciton_df)[0])
-    return {"prediction": prediction}
-
-def make_mulitple_predicition(patients: List[Patient]):
-    records= [dict(patients[patienindex]) for patienindex in range(len(patients))]
-    prediciton_df= pd.DataFrame.from_records(records)
-    prediciton_df.drop(['firstname','lastname'], axis = 1,inplace=True)
-    prediciton_df["predicition"]=make_prediction(prediciton_df)
-    return dumps(prediciton_df.to_dict('index'))
-    
-@app.get("/")
-def read_root():
-    return {"message": "We are ready to go !"}
-
-@app.get("/predcit")
-async def predict(patient: Patient):
-    result= make_one_predicition(patient)
-    return result
-
-@app.get("/document")
-async def predict_file(patiens: List[Patient]):
-    result = make_mulitple_predicition(patiens)
-    return result
-
-@app.get("/patients",response_model=List[Patient],status_code=200)
-async def get_all_patients():
-    patients= db.query(models.Patient).all() # as json 
-    return patients
-
-    
-@app.get("/patient/{patient_id}")
-async def get_patient(item_id: int):
-    pass
-
-@app.post("/patient",response_model=Patient_in_db,
-          status_code=status.HTTP_201_CREATED)
-
-async def create_patient(patient: Patient):
+# Databse Calls
+def save_patient_record(record:Record,patient:Patient,result)->int:
+   
     new_record = models.Record(
-          file_name="N/A",
-          doctor_first_name="N/A",
-          doctor_last_name="N/A",
+          file_name=record.file_name,
+          doctor_first_name=record.doctor_first_name,
+          doctor_last_name=record.doctor_last_name,
           createdon= datetime.now()
     )
-    db.add(new_record)
-    db.flush()
-    record_id_indb=new_record.id
-    db.commit()
     
-#     # At this point, the object f has been pushed to the DB, 
-#     # and has been automatically assigned a unique primary key id
-    patient_in_db= prepare_for_db(patient,record_id_indb)
-    print(patient_in_db)
+    record_id_in_db = db.create_record(new_record)
+    patient_in_db = Patient_in_db(**patient.dict(), record_id=record_id_in_db,prediciton= result)
     new_patient =models.Patient(
-        record_id=record_id_indb,
-        firstname=patient.firstname,
-        lastname=patient.lastname,
-        gender=patient.gender,
-        age=patient.age,
-        hypertension=patient.hypertension,
-        heart_disease=patient.heart_disease,
-        ever_married=patient.ever_married,
-        work_type=patient.work_type,
-        Residence_type=patient.Residence_type,
-        avg_glucose_level=patient.avg_glucose_level,
-        bmi=patient.bmi,
-        smoking_status=patient.smoking_status
-    )
-    db.add(new_patient)
-    db.flush()
-    db.commit()
-    return new_patient
+        record_id=patient_in_db.record_id,
+        firstname=patient_in_db.firstname,
+        lastname=patient_in_db.lastname,
+        gender=patient_in_db.gender,
+        age=patient_in_db.age,
+        hypertension=patient_in_db.hypertension,
+        heart_disease=patient_in_db.heart_disease,
+        ever_married=patient_in_db.ever_married,
+        work_type=patient_in_db.work_type,
+        Residence_type=patient_in_db.Residence_type,
+        avg_glucose_level=patient_in_db.avg_glucose_level,
+        bmi=patient_in_db.bmi,
+        smoking_status=patient_in_db.smoking_status,
+        prediciton = patient_in_db.prediciton
+        )
+    result=db.insert_patient(new_patient)
+    return result
 
-@app.post("/patients",response_model=List[Patient],
-          status_code=status.HTTP_201_CREATED)
-async def create_patient(patients: List[Patient]):
+def save_list_patients_record(record:Record,patients,prediciton_results)->int:
+   
+    new_record = models.Record(
+          file_name=record.file_name,
+          doctor_first_name=record.doctor_first_name,
+          doctor_last_name=record.doctor_last_name,
+          createdon= datetime.now()
+    )
+    
+    record_id_in_db = db.create_record(new_record)
+    
     list_of_patients=[]
-    for patient in patients:
+    for patient ,result  in zip(patients,prediciton_results):
         new_patient =models.Patient(
+            record_id=record_id_in_db,
             firstname=patient.firstname,
             lastname=patient.lastname,
             gender=patient.gender,
@@ -161,9 +118,53 @@ async def create_patient(patients: List[Patient]):
             Residence_type=patient.Residence_type,
             avg_glucose_level=patient.avg_glucose_level,
             bmi=patient.bmi,
-            smoking_status=patient.smoking_status
+            smoking_status=patient.smoking_status,
+            prediciton =result
             )
         list_of_patients.append(new_patient)
-    db.add_all(list_of_patients)
-    db.commit()
-    return list_of_patients 
+    result=db.insert_patients(list_of_patients)
+    return result
+
+
+# ML Calls
+def make_one_predicition(record:Record,patient: Patient)->dict:
+    pd_dict = patient.dict()
+    prediciton_df= pd.DataFrame.from_dict([pd_dict])
+    prediciton_df.drop(['firstname','lastname'], axis = 1,inplace=True)
+    prediction=int(make_prediction(prediciton_df)[0])
+    save_patient_record(record,patient,prediction)
+    return {"prediction": prediction}
+
+def make_mulitple_predicition(record:Record,patients: List[Patient]):
+    records= [dict(patients[patienindex]) for patienindex in range(len(patients))]
+    prediciton_df= pd.DataFrame.from_records(records)
+    prediciton_df.drop(['firstname','lastname'], axis = 1,inplace=True)
+    prediciton_df["predicition"]=make_prediction(prediciton_df)
+    results = list(prediciton_df["predicition"])
+    save_list_patients_record(record,patients,results)
+    return dumps(prediciton_df.to_dict('index'))
+    
+@app.get("/")
+def read_root():
+    return {"message": "We are ready to go !"}
+
+@app.get("/predcit")
+async def predict(record:Record,patient: Patient):
+    result= make_one_predicition(record,patient)
+    return result
+
+@app.get("/predcit_multiple")
+async def predict_file(record:Record,patient: List[Patient]):
+    print(record)
+    result = make_mulitple_predicition(record,patient)
+    return result
+
+@app.get("/patients",response_model=List[Patient],status_code=200)
+async def get_all_patients():
+    patients= db.query(models.Patient).all() # as json 
+    return patients
+
+@app.get("/patient/{patient_id}")
+async def get_patient_by_id(item_id: int):
+    pass
+    
