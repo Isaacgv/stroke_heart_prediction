@@ -1,8 +1,9 @@
-
 import os
 
 from pathlib import Path
 
+from dotenv import load_dotenv
+load_dotenv(dotenv_path="../.env")
 
 def get_Settings():
     POSTGRES_USER : str = os.getenv("POSTGRES_USER")
