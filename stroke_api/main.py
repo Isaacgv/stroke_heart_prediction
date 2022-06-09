@@ -2,6 +2,9 @@ import sys
 sys.path.insert(0,'../stroke_prediction')
 sys.path.insert(0,'../postgres')
 
+from dotenv import load_dotenv
+load_dotenv(dotenv_path="../.env")
+
 import pandas as pd
 
 # ML API
