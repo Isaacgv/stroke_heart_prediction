@@ -35,7 +35,7 @@ class Patient(BaseModel):
     ever_married: str
     work_type: str
     Residence_type: str
-    avg_glucose_level:Optional[float]=0.0
+    avg_glucose_level:Optional[float] = 0.0
     bmi: Optional[float]=0.0
     smoking_status:str
 

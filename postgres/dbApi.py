@@ -2,7 +2,7 @@ from database import SessionLocal
 from models import Patient, Record
 from typing import List
 
-DB =SessionLocal()
+DB = SessionLocal()
 
 
 def create_record(new_record:Record) -> int:
@@ -51,5 +51,3 @@ def insert_patients(list_of_patients: List[Patient]) -> int:
     DB.add_all(list_of_patients)
     DB.commit()
     return list_of_patients 
-
-    
