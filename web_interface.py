@@ -1,9 +1,9 @@
 from datetime import datetime
+from dateutil.relativedelta import relativedelta
 import pandas as pd
 import numpy as np
 import json
 
-from pydantic import NoneBytes
 import requests
 import streamlit as st
 
@@ -82,11 +82,11 @@ st.markdown(
     """
     <style>
     [data-testid="stSidebar"][aria-expanded="true"] > div:first-child {
-        width: 500px;
+        width: 450px;
     }
     [data-testid="stSidebar"][aria-expanded="false"] > div:first-child {
-        width: 500px;
-        margin-left: -500px;
+        width: 450px;
+        margin-left: -450px;
     }
     </style>
     """,
@@ -95,6 +95,7 @@ st.markdown(
 
 with st.sidebar.expander("Single Predictions"):
     with st.form(key='my_form' ,clear_on_submit=True):
+        st.title("Patient Form")
         gender_list = np.array(["Male", "Female"])
         yes_no = np.array(["Yes", "No"])
         work_type_lit = np.array(['Private', 'Self employed', 'Govt job', 'children', 'Never worked'])
@@ -125,19 +126,64 @@ if submit_button :
 
 with st.sidebar.expander("Upload File for Predictions"):
     with st.form(key="predictions",clear_on_submit=True) as form:
+        st.title("Select a File to Generate Predictions")
         uploaded_files = st.file_uploader("Choose a CSV file")
         if uploaded_files:
             st.write("filename:", uploaded_files.name)
             filename=uploaded_files.name
         else:
             filename="N/A"
-        submit_button_m = st.form_submit_button("Submit")
-        if submit_button_m:
+        predict_button = st.form_submit_button("Submit")
+        if predict_button:
             st.success("File sent")
 
-if submit_button_m :
+if predict_button :
     data = pd.read_csv(uploaded_files)
     get_prediction_document(data)
+
+# Prediction Retrival Page Section
+with st.sidebar.expander("Retrieve Past Predictions") as sidebar:
+    
+        st.title("Select a Search Mode")
+        option = st.selectbox('Search Mode',('< Select Option >','Per Patient', 'Window Period', 'Per file'))
+        
+        # Per Patient Full Name Search
+        if option == 'Per Patient':
+            st.title("Patient")
+            with st.form(key="Retrieve patients predictions by full name",clear_on_submit=True) as form_1:
+                st.title("Full Name")
+                first_name = st.text_input(label='First Name')
+                last_name = st.text_input(label='Last Name')
+                submit_button_patient = st.form_submit_button("Get Patient Records")
+                if submit_button_patient:
+                    pass
+                
+         # per Window Period Search       
+        elif option=='Window Period':
+                st.title("Select a Window Period")
+                with st.form(key="Retrieve patients predictions by window period",clear_on_submit=True) as form_2:
+                    st.title("Dates Between")
+                    from_date = st.date_input("From Date",datetime.today() - relativedelta(years=1))
+                    to_date  = st.date_input("To Date",datetime.today())
+                    submit_button_patient = st.form_submit_button("Get Patients Records")
+                    if submit_button_patient:
+                        pass
+                    
+        # Per File Search          
+        elif option=='Per file':
+                st.title("Enter File Details")
+                with st.form(key="Retrieve patients predictions by file",clear_on_submit=True) as form_3:
+                    st.title("Details")
+                    file_name = st.text_input(label='File Name')
+                    created_on  = st.date_input("Created On",datetime.today())
+                    submit_button_patient = st.form_submit_button("Get Patients Records")
+                    if submit_button_patient:
+                        pass
+
+    
+   
+        
+
 
 
 
