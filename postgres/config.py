@@ -2,10 +2,12 @@
 import os
 from dotenv import load_dotenv
 from pathlib import Path
-dir =os.getcwd()
+dir = os.getcwd()
 
 env_path = Path(dir + "/../postgres") / '.env'
+
 print(env_path)
+
 load_dotenv(dotenv_path=env_path)
 
 def get_Settings():
