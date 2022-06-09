@@ -1,3 +1,4 @@
+from datetime import datetime
 import pandas as pd
 import numpy as np
 import json
@@ -34,9 +35,12 @@ def fix_Column_with_Nan_float(data):
 
 def get_prediction_document(data :pd.DataFrame):
     data=fix_Column_with_Nan_float(data)
-    df_json= data.to_dict(orient='records')
-    url =BACKEND + "document"
-    response = requests.get(url, json=df_json)
+    list_of_json= data.to_dict(orient='records')
+    data_json =dict()
+    data_json["record"] ={ "id": 0,"file_name": filename}
+    data_json["patient"] =list_of_json
+    url =BACKEND + "predcit_multiple"
+    response = requests.get(url, json=data_json)
     if response.status_code == 200:
         result = json.loads(response.content)
         prediction_df = pd.read_json(result, orient ='index') 
@@ -48,19 +52,24 @@ def get_prediction_document(data :pd.DataFrame):
 
 
 def details_to_json():
-    myform_json= {  "id" :0,
-                    "firstname": first_name,
-                    "lastname": last_name,
-                    "gender": gender,
-                    "age" : age,
-                    "hypertension": 1 if hypertension=="yes" else 0,
-                    "heart_disease": 1 if heart_disease=="yes" else 0,
-                    "ever_married" : ever_married,
-                    "work_type": work_type,
-                    "Residence_type": residence_type,
-                    "avg_glucose_level": avg_glucose_level,
-                    "bmi": bmi,
-                    "smoking_status": smoking_status
+    myform_json= {  "record": { "id": 0,
+                                "file_name": "N/A",
+                                "doctor_first_name": doctor_first_name if len(doctor_first_name.strip()) else "N/A",
+                                "doctor_last_name": doctor_last_name if len(doctor_last_name.strip()) else "N/A"},
+                    "patient": {    "id" :0,
+                                    "firstname": first_name,
+                                    "lastname": last_name,
+                                    "gender": gender,
+                                    "age" : age,
+                                    "hypertension": 1 if hypertension=="yes" else 0,
+                                    "heart_disease": 1 if heart_disease=="yes" else 0,
+                                    "ever_married" : ever_married,
+                                    "work_type": work_type,
+                                    "Residence_type": residence_type,
+                                    "avg_glucose_level": avg_glucose_level,
+                                    "bmi": bmi,
+                                    "smoking_status": smoking_status
+                                }
                     }
     return myform_json
 
@@ -102,7 +111,7 @@ with st.sidebar.expander("Single Predictions"):
         avg_glucose_level = st.number_input(label='Enter your Average Glucose Level', min_value=0.0, step=0.1)
         bmi = st.number_input(label='Enter your Body Mass Index (bmi)', min_value=0.0, step=0.,format="%.2f")
         smoking_status = st.radio("Do you Smoke ?", ('smoked','formerly smoked','Unknown'))
-        doctor_name = st.text_input(label='Dc. First Name')
+        doctor_first_name = st.text_input(label='Dc. First Name')
         doctor_last_name = st.text_input(label='Dc. Last Name')
         submit_button = st.form_submit_button(label='Predict')
 
@@ -119,6 +128,9 @@ with st.sidebar.expander("Upload File for Predictions"):
         uploaded_files = st.file_uploader("Choose a CSV file")
         if uploaded_files:
             st.write("filename:", uploaded_files.name)
+            filename=uploaded_files.name
+        else:
+            filename="N/A"
         submit_button_m = st.form_submit_button("Submit")
         if submit_button_m:
             st.success("File sent")

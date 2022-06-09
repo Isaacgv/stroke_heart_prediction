@@ -136,8 +136,14 @@ dmypy.json
 .idea/
 .idea/*
 
+#postgres confi
+database.ini
+
 #vscode
 .vscode
 .vscode/*
+
+
 # Data Folder
+
 #data/
