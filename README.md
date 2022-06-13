@@ -27,7 +27,7 @@ https://www.kaggle.com/datasets/fedesoriano/heart-failure-prediction
 ## Database Setup :
 
 1. Make sure to install database dependencies [psycopg2, python-dotenv, sqlalchemy]
-check stroke_heart_prediciton/requirements.txt
+    check stroke_heart_prediciton/requirements.txt
 2. Create a (.env) file in the main Root =>  stroke_heart_prediciton/.env
 3. (.env) File Should Contain:
 ```
