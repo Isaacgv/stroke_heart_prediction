@@ -121,6 +121,7 @@ if submit_button :
     message = f"{first_name} {last_name} You are at risk of a stroke !" if prediciton == 1 else  "you are safe to slay another day :)"
     message_color = 'red' if prediciton == 1 else  'green'
     st.markdown(f"<h3 style='text-align: left;color:{message_color}'> {(message)} </h3>", unsafe_allow_html=True)
+    link_to_visit ="https://www.cdc.gov/stroke/prevention.htm"
   
 # File  Prediction Page Section
 
