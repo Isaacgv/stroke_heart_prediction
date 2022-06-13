@@ -24,6 +24,20 @@ https://www.kaggle.com/datasets/fedesoriano/stroke-prediction-dataset
 * Heart Failure Prediction:
 https://www.kaggle.com/datasets/fedesoriano/heart-failure-prediction
 
+## Database Setup :
+
+1. Make sure to install dependencies from requirements.txt ( psycopg2, python-dotenv, sqlalchemy )
+2. Create a .env file in the main Root stroke_heart_prediciton/.env
+3. .env should Contain:
+```
+POSTGRES_USER=[User]
+POSTGRES_PASSWORD=[Password]
+POSTGRES_SERVER=[Server]
+POSTGRES_PORT=[Port]
+POSTGRES_DB=[Database]
+
+```
+
 ## Execute Program:
 
 1. uvicorn  main:app --host 0.0.0.0 --port 8000
