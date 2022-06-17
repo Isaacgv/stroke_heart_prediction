@@ -46,9 +46,6 @@ class Patient(BaseModel):
 class Patient_in_db(Patient):
     record_id :int
     prediciton: int
-    class Config:
-        # Serialize our sql into json 
-        orm_mode= True 
         
 class Record(BaseModel):
     id: Optional[int] = 0
@@ -159,10 +156,11 @@ async def predict_file(record:Record,patient: List[Patient]):
     result = make_mulitple_predicition(record,patient)
     return result
 
-@app.get("/patients",response_model=List[Patient],status_code=200)
-async def get_all_patients():
-    patients= db.query(models.Patient).all() # as json 
+@app.get("/patient/search/{firstname}&{lastname}",response_model=List[Patient_in_db],status_code=200)
+async def get_patient_by_name(firstname:str,lastname:str):
+    patients= db.get_patient_by_full_name(firstname,lastname)
     return patients
+
 
 @app.get("/patient/{patient_id}")
 async def get_patient_by_id(item_id: int):

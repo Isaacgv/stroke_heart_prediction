@@ -73,7 +73,15 @@ def details_to_json():
                     }
     return myform_json
 
-
+def get_patient_details():
+    url =BACKEND + "patient_details"
+    response = requests.get(url)
+    if response.status_code == 200:
+        results = response.json()
+        return results
+    else:
+        st.error("An error occurred while getting the patient details!")
+        
 # Singular Prediction Page Section
 st.title("Heart Stroke Prediction")
 
