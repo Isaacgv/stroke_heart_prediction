@@ -117,9 +117,25 @@ def search_patient_by_fullname():
     Returns:
         _type_: _description_
     """
-    url =BACKEND + "patient/search/{firstname}&{lastname}"\
+    url =BACKEND + "search/patient/{firstname}&{lastname}"\
         .format(firstname=search_patient_first_name if len(search_patient_first_name) else "%%",
                 lastname=search_patient_last_name if len(search_patient_last_name) else "%%",)
+    print(url)
+    response = requests.get(url)
+    if response.status_code == 200:
+        results=response.json()
+        return results
+    else:
+        st.error("An error occurred while searching for the patient!")
+        
+def search_patients_file_by_date():
+    """_summary_
+
+    Returns:
+        _type_: _description_
+    """
+    url =BACKEND + "search/file/{filename}&{createdon}"\
+        .format(filename=search_file_name,createdon=search_created_on.strftime("%Y-%m-%d")) 
     print(url)
     response = requests.get(url)
     if response.status_code == 200:
@@ -136,9 +152,18 @@ def validate_search_input_details():
     Returns:
         _type_: _description_
     """
-    if len(search_patient_first_name.strip())==0 and len(search_patient_last_name.strip())==0:
-        st.warning("First Name or Last Name is required to Search!")
-        return False
+    if option == 'Per Patient':
+        if len(search_patient_first_name.strip())==0 and len(search_patient_last_name.strip())==0:
+            st.warning("First Name or Last Name is required to Search!")
+            return False
+    elif option=='Window Period':
+        if search_patient_from_date < search_patient_from_date:
+            st.warning("Window Period is required (From Date strictly greater than To Date) to Search!")
+            return False
+    elif option=='Per file':
+         if len(search_patient_first_name.strip())==0 or [".csv",".txt",".docx"] in search_patient_first_name.strip().lower():
+            st.warning("Window Period is required (From Date strictly greater than To Date) to Search!")
+            return False
     return True
 
 # Web Interface Section
@@ -222,49 +247,24 @@ with st.sidebar.expander("Retrieve Past Predictions"):
     
      # Per Patient Full Name Search
         if option == 'Per Patient':
-            st.title("Patient")
-            st.title("Full Name")
+            st.title("Patient Full Name")
             search_patient_first_name = st.text_input(label='First Name')
             search_patient_last_name = st.text_input(label='Last Name')
             button = st.form_submit_button("Get Patient Records")   
         
         elif option=='Window Period':
             st.title("Select a Window Period")
-            st.title("Dates Between")
-            from_date = st.date_input("From Date",datetime.today() - relativedelta(years=1))
-            to_date  = st.date_input("To Date",datetime.today())
+            search_patient_from_date = st.date_input("From Date",datetime.today() - relativedelta(years=1))
+            search_patient_to_date  = st.date_input("To Date",datetime.today())
             button = st.form_submit_button("Get Patients Records")
             
         elif option=='Per file':
             st.title("Enter File Details")
-            st.title("Details")
-            file_name = st.text_input(label='File Name')
-            created_on  = st.date_input("Created On",datetime.today())
-            button = st.form_submit_button("Get Patients Records")
+            st.text(" No File extension is Required\nExample:\n'myfile.csv' => your input 'myfile'")
+            search_file_name = st.text_input(label='File Name')
+            search_created_on  = st.date_input("Created On",datetime.today())
+            button = st.form_submit_button("Get File Records")
     
-         
-        
-    # # per Window Period Search       
-    # elif option=='Window Period':
-    #         st.title("Select a Window Period")
-    #         with st.form(key="Retrieve patients predictions by window period",clear_on_submit=True) as form_2:
-    #             st.title("Dates Between")
-    #             from_date = st.date_input("From Date",datetime.today() - relativedelta(years=1))
-    #             to_date  = st.date_input("To Date",datetime.today())
-    #             search_button_file = st.form_submit_button("Get Patients Records")
-    #             if search_button_file:
-    #                 pass
-                
-    # # Per File Search          
-    # elif option=='Per file':
-    #         st.title("Enter File Details")
-    #         with st.form(key="Retrieve patients predictions by file",clear_on_submit=True) as form_3:
-    #             st.title("Details")
-    #             file_name = st.text_input(label='File Name')
-    #             created_on  = st.date_input("Created On",datetime.today())
-    #             submit_button_patient = st.form_submit_button("Get Patients Records")
-    #             if submit_button_patient:
-    #                 pass
 if button :
     if option == 'Per Patient':
        if validate_search_input_details():
@@ -276,12 +276,19 @@ if button :
                 st.dataframe( data.style.applymap(data_frame_style_color_neg,subset=['prediction']))
            else:
                st.warning("No Records Found")
-            
+          
     elif option=='Window Period':
         pass
         
     elif option=='Per file':
-        pass
+           data = search_patients_file_by_date()
+           data = pd.DataFrame(data)
+           if data.shape[0] > 0:
+                data["prediction"] = data["prediction"].apply(lambda x:"Risk of Stroke" if x == 1 else "Normal")
+                data.drop('record_id', axis=1, inplace=True)
+                st.dataframe( data.style.applymap(data_frame_style_color_neg,subset=['prediction']))
+           else:
+               st.warning("No Records Found")
           
          
 

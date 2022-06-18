@@ -1,5 +1,7 @@
+from datetime import datetime
+from venv import create
 from database import SessionLocal
-from sqlalchemy import or_,and_
+from sqlalchemy import or_,and_, extract
 from models import Patient, Record
 from typing import List
 
@@ -64,10 +66,23 @@ def get_patient_by_full_name(first_name: str, last_name: str) -> List[Patient]:
     Returns:
         models.Patient: _description_
     """
-    return DB.query(Patient).filter(and_(Patient.firstname.ilike("%"+first_name+"%"),
-                                        Patient.lastname.ilike("%"+last_name+"%"))).all()
-    
-def  get_patient_by_date (filename:str, date: str) -> Patient:
+    return DB.query(Patient).outerjoin(Record).filter(Record.file_name== "N/A",
+                                                      and_(Patient.firstname.ilike("%"+first_name+"%"),
+                                                           Patient.lastname.ilike("%"+last_name+"%"))).all()
+        
+def get_patients_by_window_period(fromdate :str, todate: str) -> List[Patient]:
+    """
+
+    Args:
+        fromdate (str): _description_
+        todate (str): _description_
+
+    Returns:
+        List[Patient]: _description_
+    """
+    return DB.query(Patient).outerjoin(Record).filter(Record.file_name== "N/A",Record.createdon.between(fromdate, todate)).all()
+       
+def get_patients_file_by_date (filename:str, year: int, month:int, day :int) -> Patient:
     """_summary_
     Get a patient from the patients table
 
@@ -78,7 +93,15 @@ def  get_patient_by_date (filename:str, date: str) -> Patient:
     Returns:
         models.Patient: _description_
     """
-    q = DB.query(Patient).outerjoin(Record).filter(Record.id == Patient.record_id,
-                                                   Record.file_name == filename).filter(Record.createdon == date)
+    file_header =DB.query(Record).filter(Record.file_name.ilike("%"+filename+"%"),
+                                                      extract('year', Record.createdon) == year,
+                                                        extract('month', Record.createdon) == month,
+                                                        extract('day', Record.createdon)==day).first()
+    id =file_header.id
+    # left join to get all the records for the patient
+    return DB.query(Patient).outerjoin(Record).filter(Record.id==id).all()
+
+
+    
   
    
