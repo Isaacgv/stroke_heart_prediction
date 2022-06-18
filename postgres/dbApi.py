@@ -70,18 +70,20 @@ def get_patient_by_full_name(first_name: str, last_name: str) -> List[Patient]:
                                                       and_(Patient.firstname.ilike("%"+first_name+"%"),
                                                            Patient.lastname.ilike("%"+last_name+"%"))).all()
         
-def get_patients_by_window_period(fromdate :str, todate: str) -> List[Patient]:
-    """
+def get_patients_by_window_period(filter :dict) -> List[Patient]:
+    """_summary_
 
     Args:
-        fromdate (str): _description_
-        todate (str): _description_
+        filter (dict): _description_
 
     Returns:
         List[Patient]: _description_
     """
-    return DB.query(Patient).outerjoin(Record).filter(Record.file_name== "N/A",Record.createdon.between(fromdate, todate)).all()
+    return DB.query(Patient).outerjoin(Record).filter(Record.file_name== "N/A", extract('year', Record.createdon).between(filter["from_year"],(filter["to_year"])),
+                                                        extract('month', Record.createdon).between(filter["from_month"],(filter["to_month"])),
+                                                        extract('day', Record.createdon).between(filter["from_day"],(filter["to_day"])),).all()
        
+
 def get_patients_file_by_date (filename:str, year: int, month:int, day :int) -> Patient:
     """_summary_
     Get a patient from the patients table
@@ -93,10 +95,12 @@ def get_patients_file_by_date (filename:str, year: int, month:int, day :int) -> 
     Returns:
         models.Patient: _description_
     """
-    file_header =DB.query(Record).filter(Record.file_name.ilike("%"+filename+"%"),
+    file_header =DB.query(Record).filter(Record.file_name.ilike("%"+filename+"%"),Record.doctor_first_name== "N/A",Record.doctor_last_name== "N/A",
                                                       extract('year', Record.createdon) == year,
                                                         extract('month', Record.createdon) == month,
                                                         extract('day', Record.createdon)==day).first()
+    if file_header is None:
+        return None
     id =file_header.id
     # left join to get all the records for the patient
     return DB.query(Patient).outerjoin(Record).filter(Record.id==id).all()

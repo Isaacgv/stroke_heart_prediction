@@ -2,7 +2,7 @@
 import pandas as pd
 import numpy as np
 import json
-
+import re
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
@@ -65,6 +65,18 @@ def data_frame_style_color_neg(val):
     color = 'red' if type(val) == str and val=="Risk of Stroke" else 'green'
     return 'color: %s' %color
 
+def data_frame_style_display(data:pd.DataFrame):
+    """_summary_
+    Pandas Dataframe Styler
+    Args:
+        data (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
+    data.style.applymap(data_frame_style_color_neg)
+    return data
+
 
 def data_frame_fix_column_with_Nan_float(data):
     """_summary_
@@ -120,14 +132,28 @@ def search_patient_by_fullname():
     url =BACKEND + "search/patient/{firstname}&{lastname}"\
         .format(firstname=search_patient_first_name if len(search_patient_first_name) else "%%",
                 lastname=search_patient_last_name if len(search_patient_last_name) else "%%",)
-    print(url)
     response = requests.get(url)
     if response.status_code == 200:
         results=response.json()
         return results
     else:
         st.error("An error occurred while searching for the patient!")
-        
+ 
+def search_patient_by_window_period():
+    """_summary_
+    Search for a patient by fullname
+    Returns:
+        _type_: _description_
+    """
+    url =BACKEND + "search/patient/period/{fromdate}&{todate}"\
+        .format(fromdate=search_patient_from_date.strftime("%Y-%m-%d"),todate=search_patient_to_date.strftime("%Y-%m-%d"))
+    response = requests.get(url)
+    if response.status_code == 200:
+        results=response.json()
+        return results
+    else:
+        st.error("An error occurred while searching for the patient!")
+      
 def search_patients_file_by_date():
     """_summary_
 
@@ -136,7 +162,6 @@ def search_patients_file_by_date():
     """
     url =BACKEND + "search/file/{filename}&{createdon}"\
         .format(filename=search_file_name,createdon=search_created_on.strftime("%Y-%m-%d")) 
-    print(url)
     response = requests.get(url)
     if response.status_code == 200:
         results=response.json()
@@ -161,8 +186,12 @@ def validate_search_input_details():
             st.warning("Window Period is required (From Date strictly greater than To Date) to Search!")
             return False
     elif option=='Per file':
-         if len(search_patient_first_name.strip())==0 or [".csv",".txt",".docx"] in search_patient_first_name.strip().lower():
-            st.warning("Window Period is required (From Date strictly greater than To Date) to Search!")
+         if len(search_file_name.strip())==0:
+            st.warning("File name is required to Search!")
+            return False
+         pattern = re.compile(r'^[a-zA-Z0-9_]+$')
+         if not pattern.match(search_file_name):
+            st.warning("File name is not a match to the accepted format to Search!")
             return False
     return True
 
@@ -266,30 +295,39 @@ with st.sidebar.expander("Retrieve Past Predictions"):
             button = st.form_submit_button("Get File Records")
     
 if button :
-    if option == 'Per Patient':
-       if validate_search_input_details():
-           data = search_patient_by_fullname()
-           data = pd.DataFrame(data)
-           if data.shape[0] > 0:
-                data["prediction"] = data["prediction"].apply(lambda x:"Risk of Stroke" if x == 1 else "Normal")
-                data.drop('record_id', axis=1, inplace=True)
-                st.dataframe( data.style.applymap(data_frame_style_color_neg,subset=['prediction']))
-           else:
-               st.warning("No Records Found")
-          
-    elif option=='Window Period':
-        pass
+    if validate_search_input_details():
+        if option == 'Per Patient':
         
-    elif option=='Per file':
-           data = search_patients_file_by_date()
-           data = pd.DataFrame(data)
-           if data.shape[0] > 0:
+            data = search_patient_by_fullname()
+            data = pd.DataFrame(data)
+            if data.shape[0] > 0:
+                    data["prediction"] = data["prediction"].apply(lambda x:"Risk of Stroke" if x == 1 else "Normal")
+                    data.drop('record_id', axis=1, inplace=True)
+                    st.dataframe( data.style.applymap(data_frame_style_color_neg,subset=['prediction']))
+            else:
+                st.warning("No Records Found")
+            
+        elif option=='Window Period':
+            data = search_patient_by_window_period()
+            data = pd.DataFrame(data)
+            if data.shape[0] > 0:
                 data["prediction"] = data["prediction"].apply(lambda x:"Risk of Stroke" if x == 1 else "Normal")
                 data.drop('record_id', axis=1, inplace=True)
                 st.dataframe( data.style.applymap(data_frame_style_color_neg,subset=['prediction']))
-           else:
-               st.warning("No Records Found")
-          
+            else:
+                st.warning("No Records Found")
+                                
+        elif option=='Per file':
+        
+            data = search_patients_file_by_date()
+            data = pd.DataFrame(data)
+            if data.shape[0] > 0:
+                    data["prediction"] = data["prediction"].apply(lambda x:"Risk of Stroke" if x == 1 else "Normal")
+                    data.drop('record_id', axis=1, inplace=True)
+                    st.dataframe( data.style.applymap(data_frame_style_color_neg,subset=['prediction']))
+            else:
+                st.warning("No Records Found")
+            
          
 
                 
