@@ -36,8 +36,8 @@ POSTGRES_PORT=[Port]
 POSTGRES_DB=[Database]
 
 ```
-4. Open terminal and go to stroke_heart_prediciton/postgres 
-5. Run createdb.py to create the tables & relationships in your database
+4. Open terminal and go to Cd stroke_heart_prediciton/postgres 
+5. Run Python createdb.py to create the tables & relationships in your database
 
 ## Execute Program:
 

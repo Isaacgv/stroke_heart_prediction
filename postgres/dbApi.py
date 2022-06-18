@@ -1,5 +1,5 @@
 from database import SessionLocal
-from sqlalchemy import or_
+from sqlalchemy import or_,and_
 from models import Patient, Record
 from typing import List
 
@@ -64,8 +64,8 @@ def get_patient_by_full_name(first_name: str, last_name: str) -> List[Patient]:
     Returns:
         models.Patient: _description_
     """
-    return DB.query(Patient).filter(or_(Patient.firstname.ilike(first_name),
-                                        Patient.lastname.ilike(last_name))).all()
+    return DB.query(Patient).filter(and_(Patient.firstname.ilike("%"+first_name+"%"),
+                                        Patient.lastname.ilike("%"+last_name+"%"))).all()
     
 def  get_patient_by_date (filename:str, date: str) -> Patient:
     """_summary_
