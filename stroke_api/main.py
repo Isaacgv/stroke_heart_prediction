@@ -1,3 +1,4 @@
+from inspect import stack
 import sys
 sys.path.insert(0,'../stroke_prediction')
 sys.path.insert(0,'../postgres')
@@ -180,5 +181,4 @@ async def get_patient_by_name(filename:str,createdon:str):
     day =createdon.split("-")[2]
     patients= db.get_patients_file_by_date(filename,year,month,day)
     return patients
-
 
