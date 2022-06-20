@@ -1,17 +1,27 @@
-from datetime import datetime
+
 import pandas as pd
 import numpy as np
 import json
+import re
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
 
-from pydantic import NoneBytes
 import requests
 import streamlit as st
 
 # interact with FastAPI endpoint
 BACKEND ="http://0.0.0.0:8005/"
 
+
+# Make Predictions Section
+
 def get_prediction():
-    features= details_to_json()
+    """_summary_
+    Takes users Input from User Interface returns a Prediction
+    Returns:
+        _type_: _description_
+    """
+    features= input_details_to_json()
     url =BACKEND + "predcit"
     response = requests.get(url, json=features)
     if response.status_code ==200:
@@ -21,20 +31,14 @@ def get_prediction():
     else:
         st.error("An error occurred while getting the prediction!")
 
-def color_neg(val):
-    color = 'red' if type(val) == str and val=="Risk of Stroke" else 'green'
-    return 'color: %s' %color
-
-# Json Encoder doesnt like to deal with Nan's in Float columns
-def fix_Column_with_Nan_float(data):
-    float_cols = data.select_dtypes(include=['float64','int64']).columns
-    str_cols = data.select_dtypes(include=['object']).columns
-    data.loc[:, float_cols]=data.loc[:, float_cols].fillna(0.0)
-    data.loc[:, str_cols]=data.loc[:, str_cols].fillna('')
-    return data
-
 def get_prediction_document(data :pd.DataFrame):
-    data=fix_Column_with_Nan_float(data)
+    """_summary_
+     Takes File Input from User Interface returns a Prediction Dataframe 
+     Displays the Data Frame on the Screen
+    Args:
+        data (pd.DataFrame): _description_
+    """
+    data=data_frame_fix_column_with_Nan_float(data)
     list_of_json= data.to_dict(orient='records')
     data_json =dict()
     data_json["record"] ={ "id": 0,"file_name": filename}
@@ -44,14 +48,59 @@ def get_prediction_document(data :pd.DataFrame):
     if response.status_code == 200:
         result = json.loads(response.content)
         prediction_df = pd.read_json(result, orient ='index') 
-        data["predicition"]=prediction_df["predicition"]
-        data["predicition"] = data["predicition"].apply(lambda x:"Risk of Stroke" if x == 1 else "Normal")
-        st.dataframe(data.style.applymap(color_neg,subset=['predicition']))
+        data["prediction"]=prediction_df["prediction"]
+        return data
     else:
         st.error("An error occurred while parsinf the file's predictions !")
 
+def data_frame_style_color_neg(val):
+    """_summary_
+    Pandas Dataframe Styler
+    Args:
+        val (_type_): _description_
 
-def details_to_json():
+    Returns:
+        _type_: _description_
+    """
+    color = 'red' if type(val) == str and val=="Risk of Stroke" else 'green'
+    return 'color: %s' %color
+
+def data_frame_style_display(data:pd.DataFrame):
+    """_summary_
+    Pandas Dataframe Styler
+    Args:
+        data (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
+    data.style.applymap(data_frame_style_color_neg)
+    return data
+
+
+def data_frame_fix_column_with_Nan_float(data):
+    """_summary_
+    Fix Nan_float issues in dataframe , Pydantic model doesnt like Nan's in Float columns
+    Json Encoder doesnt like to deal with Nan's in Float columns
+    Args:
+        data (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
+    float_cols = data.select_dtypes(include=['float64','int64']).columns
+    str_cols = data.select_dtypes(include=['object']).columns
+    data.loc[:, float_cols]=data.loc[:, float_cols].fillna(0.0)
+    data.loc[:, str_cols]=data.loc[:, str_cols].fillna('')
+    return data
+
+
+def input_details_to_json():
+    """_summary_
+    
+    Returns:
+        _type_: _description_
+    """
     myform_json= {  "record": { "id": 0,
                                 "file_name": "N/A",
                                 "doctor_first_name": doctor_first_name if len(doctor_first_name.strip()) else "N/A",
@@ -73,8 +122,80 @@ def details_to_json():
                     }
     return myform_json
 
+# Data Base Querying 
+def search_patient_by_fullname():
+    """_summary_
+    Search for a patient by fullname
+    Returns:
+        _type_: _description_
+    """
+    url =BACKEND + "search/patient/{firstname}&{lastname}"\
+        .format(firstname=search_patient_first_name if len(search_patient_first_name) else "%%",
+                lastname=search_patient_last_name if len(search_patient_last_name) else "%%",)
+    response = requests.get(url)
+    if response.status_code == 200:
+        results=response.json()
+        return results
+    else:
+        st.error("An error occurred while searching for the patient!")
+ 
+def search_patient_by_window_period():
+    """_summary_
+    Search for a patient by fullname
+    Returns:
+        _type_: _description_
+    """
+    url =BACKEND + "search/patient/period/{fromdate}&{todate}"\
+        .format(fromdate=search_patient_from_date.strftime("%Y-%m-%d"),todate=search_patient_to_date.strftime("%Y-%m-%d"))
+    response = requests.get(url)
+    if response.status_code == 200:
+        results=response.json()
+        return results
+    else:
+        st.error("An error occurred while searching for the patient!")
+      
+def search_patients_file_by_date():
+    """_summary_
 
-# Singular Prediction Page Section
+    Returns:
+        _type_: _description_
+    """
+    url =BACKEND + "search/file/{filename}&{createdon}"\
+        .format(filename=search_file_name,createdon=search_created_on.strftime("%Y-%m-%d")) 
+    response = requests.get(url)
+    if response.status_code == 200:
+        results=response.json()
+        return results
+    else:
+        st.error("An error occurred while searching for the patient!")
+    
+# Form Validations
+
+def validate_search_input_details():
+    """_summary_
+    Validate Inputs from User Interface
+    Returns:
+        _type_: _description_
+    """
+    if option == 'Per Patient':
+        if len(search_patient_first_name.strip())==0 and len(search_patient_last_name.strip())==0:
+            st.warning("First Name or Last Name is required to Search!")
+            return False
+    elif option=='Window Period':
+        if search_patient_from_date > search_patient_to_date:
+            st.warning("Window Period is required (From Date strictly greater than To Date) to Search!")
+            return False
+    elif option=='Per file':
+         if len(search_file_name.strip())==0:
+            st.warning("File name is required to Search!")
+            return False
+         pattern = re.compile(r'^[a-zA-Z0-9_]+$')
+         if not pattern.match(search_file_name):
+            st.warning("File name is not a match to the accepted format to Search!")
+            return False
+    return True
+
+# Web Interface Section
 st.title("Heart Stroke Prediction")
 
 # CSS Changes for Side Bar 
@@ -82,19 +203,21 @@ st.markdown(
     """
     <style>
     [data-testid="stSidebar"][aria-expanded="true"] > div:first-child {
-        width: 500px;
+        width: 450px;
     }
     [data-testid="stSidebar"][aria-expanded="false"] > div:first-child {
-        width: 500px;
-        margin-left: -500px;
+        width: 450px;
+        margin-left: -450px;
     }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
+# Singular Prediction Page Section
 with st.sidebar.expander("Single Predictions"):
     with st.form(key='my_form' ,clear_on_submit=True):
+        st.title("Patient Form")
         gender_list = np.array(["Male", "Female"])
         yes_no = np.array(["Yes", "No"])
         work_type_lit = np.array(['Private', 'Self employed', 'Govt job', 'children', 'Never worked'])
@@ -120,24 +243,97 @@ if submit_button :
     message = f"{first_name} {last_name} You are at risk of a stroke !" if prediciton == 1 else  "you are safe to slay another day :)"
     message_color = 'red' if prediciton == 1 else  'green'
     st.markdown(f"<h3 style='text-align: left;color:{message_color}'> {(message)} </h3>", unsafe_allow_html=True)
+    link_to_visit ="https://www.cdc.gov/stroke/prevention.htm"
   
 # File  Prediction Page Section
-
 with st.sidebar.expander("Upload File for Predictions"):
     with st.form(key="predictions",clear_on_submit=True) as form:
+        st.title("Select a File to Generate Predictions")
         uploaded_files = st.file_uploader("Choose a CSV file")
         if uploaded_files:
             st.write("filename:", uploaded_files.name)
             filename=uploaded_files.name
         else:
             filename="N/A"
-        submit_button_m = st.form_submit_button("Submit")
-        if submit_button_m:
+        predict_button = st.form_submit_button("Submit")
+        if filename != "N/A" and predict_button:
             st.success("File sent")
 
-if submit_button_m :
+if predict_button :
     data = pd.read_csv(uploaded_files)
-    get_prediction_document(data)
+    data=get_prediction_document(data)
+    data["prediction"] = data["prediction"].apply(lambda x:"Risk of Stroke" if x == 1 else "Normal")
+    st.dataframe(data.style.applymap(data_frame_style_color_neg,subset=['prediction']))
+
+# Prediction Retrival Page Section
+with st.sidebar.expander("Retrieve Past Predictions"):
+    button =None
+    st.title("Select a Search Mode")
+    option = st.selectbox('Search Mode',('< Select Option >','Per Patient', 'Window Period', 'Per file'))
+
+   
+    with st.form(key="Retrieve patients predictions by full name",clear_on_submit=True) as form_1:
+    
+     # Per Patient Full Name Search
+        if option == 'Per Patient':
+            st.title("Patient Full Name")
+            search_patient_first_name = st.text_input(label='First Name')
+            search_patient_last_name = st.text_input(label='Last Name')
+            button = st.form_submit_button("Get Patient Records")   
+        
+        elif option=='Window Period':
+            st.title("Select a Window Period")
+            search_patient_from_date = st.date_input("From Date",datetime.today() - relativedelta(years=1))
+            search_patient_to_date  = st.date_input("To Date",datetime.today())
+            button = st.form_submit_button("Get Patients Records")
+            
+        elif option=='Per file':
+            st.title("Enter File Details")
+            st.text(" No File extension is Required\nExample:\n'myfile.csv' => your input 'myfile'")
+            search_file_name = st.text_input(label='File Name')
+            search_created_on  = st.date_input("Created On",datetime.today())
+            button = st.form_submit_button("Get File Records")
+    
+if button :
+    if validate_search_input_details():
+        if option == 'Per Patient':
+        
+            data = search_patient_by_fullname()
+            data = pd.DataFrame(data)
+            if data.shape[0] > 0:
+                    data["prediction"] = data["prediction"].apply(lambda x:"Risk of Stroke" if x == 1 else "Normal")
+                    data.drop('record_id', axis=1, inplace=True)
+                    st.dataframe( data.style.applymap(data_frame_style_color_neg,subset=['prediction']))
+            else:
+                st.warning("No Records Found")
+            
+        elif option=='Window Period':
+            data = search_patient_by_window_period()
+            data = pd.DataFrame(data)
+            if data.shape[0] > 0:
+                data["prediction"] = data["prediction"].apply(lambda x:"Risk of Stroke" if x == 1 else "Normal")
+                data.drop('record_id', axis=1, inplace=True)
+                st.dataframe( data.style.applymap(data_frame_style_color_neg,subset=['prediction']))
+            else:
+                st.warning("No Records Found")
+                                
+        elif option=='Per file':
+        
+            data = search_patients_file_by_date()
+            data = pd.DataFrame(data)
+            if data.shape[0] > 0:
+                    data["prediction"] = data["prediction"].apply(lambda x:"Risk of Stroke" if x == 1 else "Normal")
+                    data.drop('record_id', axis=1, inplace=True)
+                    st.dataframe( data.style.applymap(data_frame_style_color_neg,subset=['prediction']))
+            else:
+                st.warning("No Records Found")
+            
+         
+
+                
+   
+        
+
 
 
 
