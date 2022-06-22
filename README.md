@@ -1,13 +1,13 @@
 # Heart Stroke Predictions Model In Production
 
-## Users :
-* Medical professionals
-* Clinics / hospitals
-* Medical devices
+## Users : :stethoscope:
+* Medical professionals :man_health_worker:
+* Clinics / hospitals :hospital:
+* Medical devices :microscope:
 
-## Usage Description:
+## Usage Description: :anatomical_heart: :collision:
 
-* After providing the necessary information to the health professionals of the user or inputting his or her personal & health information on the medical device or the Web Interface.
+After providing the necessary information to the health professionals of the user or inputting his or her personal & health information on the medical device or the Web Interface.
 Our model will use the the information provided by the user above to predict the probability of him having a stroke. 
 After that the Web interface will display a detailed result about the patient status and possible precautions or advices to visit a professional
 
