@@ -26,8 +26,8 @@ https://www.kaggle.com/datasets/fedesoriano/stroke-prediction-dataset</br>
 
 ## Postgres Database Setup :
 
-1. Make sure to install database dependencies [psycopg2, python-dotenv, sqlalchemy]
-   -Check stroke_heart_prediciton/requirements.txt (Remark For Mac, Linux Users psycopg2-binary) :point_left:
+1. Make sure to install database dependencies [psycopg2, python-dotenv, sqlalchemy]<br>
+   -Check stroke_heart_prediciton/requirements.txt (Remark For Mac, Linux Users psycopg2-binary) :point_left:</br>
 3. Create a (.env) file in the main Root =>  stroke_heart_prediciton/.env
 4. (.env) File Should Contain: :exclamation: 
 ```
@@ -45,10 +45,10 @@ BACKEND_SERVER =[Server]
 4. Open terminal and go to Cd stroke_heart_prediciton/postgres 
 5. Run Python createdb.py to create the tables & relationships in your database
 
-## Airflow ( Follow the steps in Repo )
+## Airflow ( Follow the steps in Repo ) :timer_clock:
 [Airflow Repo - README.md](https://github.com/Isaacgv/stroke_prediction_airflow#readme)
 
-## Grafana ( Follow the steps in Repo )
+## Grafana ( Follow the steps in Repo ) :cyclone:
 [Grafana Repo - README.md](https://github.com/Patrick844/grafana-heroku#readme)
 
 ## Execute Program Locally:
