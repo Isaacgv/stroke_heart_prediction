@@ -5,7 +5,7 @@
 * Clinics / hospitals :hospital:
 * Medical devices :microscope:
 
-## Usage Description: :anatomical_heart: :collision:
+## Usage Description: :anatomical_heart:
 
 After providing the necessary information to the health professionals of the user or inputting his or her personal & health information on the medical device or the Web Interface.
 Our model will use the the information provided by the user above to predict the probability of him having a stroke. 
@@ -21,12 +21,12 @@ Our application will feature a :
 * Prediction monitoring dashboard using Gafana
 
 ## Dataset: 
-* 11 clinical features for predicting stroke events:
-https://www.kaggle.com/datasets/fedesoriano/stroke-prediction-dataset
+* 11 clinical features for predicting stroke events:<br>
+https://www.kaggle.com/datasets/fedesoriano/stroke-prediction-dataset</br>
 
 ## Postgres Database Setup :
 
-1. Make sure to install database dependencies [psycopg2, python-dotenv, sqlalchemy]. <br />
+1. Make sure to install database dependencies [psycopg2, python-dotenv, sqlalchemy]
    -Check stroke_heart_prediciton/requirements.txt (Remark For Mac, Linux Users psycopg2-binary) :point_left:
 3. Create a (.env) file in the main Root =>  stroke_heart_prediciton/.env
 4. (.env) File Should Contain: :exclamation: 
