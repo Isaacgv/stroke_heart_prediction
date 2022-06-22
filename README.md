@@ -47,9 +47,13 @@ BACKEND_SERVER =[Server]
 
 ## Airflow ( Follow the steps in Repo ) :timer_clock:
 [Airflow Repo - README.md](https://github.com/Isaacgv/stroke_prediction_airflow#readme)
-
+[Link to Airflow](http://34.135.123.223:8052/)
 ## Grafana ( Follow the steps in Repo ) :cyclone:
 [Grafana Repo - README.md](https://github.com/Patrick844/grafana-heroku#readme)
+[Link to Grafana](https://grafa-stroke.herokuapp.com/d/LDFHt43nk/feature-monitoring?orgId=1)
+
+## Heroku  Streamlit 
+[Link to Grafana](http://35.238.16.200:8501/)
 
 ## Execute Program Locally:
 
