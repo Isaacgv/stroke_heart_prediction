@@ -46,7 +46,7 @@ BACKEND_SERVER =[Server]
 5. Run Python createdb.py to create the tables & relationships in your database
 
 ## Airflow 
-[a relative link]( https://github.com/Isaacgv/stroke_prediction_airflow.git/README.md)
+[a relative link](https://github.com/Isaacgv/stroke_prediction_airflow#readme)
 
 ## Execute Program Locally:
 
