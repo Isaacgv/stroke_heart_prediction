@@ -57,5 +57,5 @@ BACKEND_SERVER =[Server]
 
 2. streamlit run web_interface.py --server.port 8010;
 
-
+## System Architecture :bricks:
 ![Screenshot 2022-04-27 at 6 56 27 PM](DSP.drawio.png)
