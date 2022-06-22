@@ -1,4 +1,4 @@
-# Strokes and Heart Failure Predictions Model
+# Heart Stroke Predictions Model In Production
 
 ## Users :
 * Medical professionals
@@ -44,6 +44,10 @@ BACKEND_SERVER =[Server]
 ```
 4. Open terminal and go to Cd stroke_heart_prediciton/postgres 
 5. Run Python createdb.py to create the tables & relationships in your database
+
+## Airflow 
+[vue] https://github.com/Isaacgv/stroke_prediction_airflow.git
+
 
 ## Execute Program Locally:
 
